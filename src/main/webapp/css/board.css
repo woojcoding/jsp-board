@@ -1,0 +1,22 @@
+.search {
+    width: 100%;
+    border: 1px solid #444444;
+    height: 60px;
+    border-collapse: collapse;
+}
+
+#searchBox {
+    width: 100%;
+}
+
+.boardList {
+    width: 100%;
+    border-top: 1px solid #444444;
+    border-collapse: collapse;
+}
+
+.boardList td,
+.borderList tr {
+    border-bottom: 1px solid #444444;
+    padding: 10px;
+}
