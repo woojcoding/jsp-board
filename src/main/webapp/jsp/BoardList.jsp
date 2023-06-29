@@ -35,21 +35,21 @@
 
         BoardDao boardDao = new BoardDao();
 
-        total = boardDao.getBoardCount();
-
         int startRow = (currentPage - 1) * pageSize + 1;
 
         int endRow = currentPage * pageSize;
 
-        String startDate = "";
+        String startDate = request.getParameter("startDate");
 
-        String endDate = "";
+        String endDate = request.getParameter("endDate");
 
-        String categoryId = "";
+        String categoryId = request.getParameter("category");
 
-        String keyword = "";
+        String keyword = request.getParameter("keyword");
+
+        total = boardDao.getBoardCount(startDate, endDate, categoryId, keyword);
     %>
-    <form action="BoardList.jsp?keyword" method="post">
+    <form action="BoardList.jsp?&startDate=<%=startDate%>&endDate=<%=endDate%>&category=<%=categoryId%>&keyword=<%=keyword%>" method="get">
     <table class="search">
         <tr>
             <td>등록일</td>
@@ -75,7 +75,7 @@
                     %>
                 </select>
             </td>
-            <td> <input type="text" id="searchBox" placeholder="검색어를 입력해 주세요.(제목 + 작성자 + 내용)"></td>
+            <td> <input type="text" id="searchBox" name="keyword" placeholder="검색어를 입력해 주세요.(제목 + 작성자 + 내용)"></td>
             <td><button type="submit">검색</button></td>
         </tr>
     </table>
@@ -91,7 +91,7 @@
             <td>수정 일시</td>
         </tr>
         <%
-            List<BoardBean> boards = boardDao.getBoards(startRow, endRow);
+            List<BoardBean> boards = boardDao.getBoards(startDate, endDate, categoryId, keyword, startRow, endRow);
 
             for (BoardBean board : boards) {
         %>
@@ -128,30 +128,18 @@
                     endPage = pageCount;
                 }
         %>
-        <a href="BoardList.jsp"><<</a>
-        <%
-                if (startPage > 10) {
-        %>
-        <a href="BoardList.jsp?pageNum=<%=startPage - 10%>"><</a>
-        <%
-               }
-
-                for (int i = startPage; i <= endPage; i++) {
-        %>
-        <a href="BoardList.jsp?pageNum=<%=i%>"><%=i%> </a>
-        <%
-                }
-
-                if (endPage < pageCount) {
-        %>
-        <a href="BoardList.jsp?pageNum=<%=startPage+10%>">></a>
-        <%
-                }
-        %>
-        <a href="BoardList.jsp?pageNum=<%=endPage%>">>></a>
-        <%
-            }
-        %>
+        <a href="BoardList.jsp?pageNum=1&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>"><<</a>
+        <% if (startPage > 10) { %>
+        <a href="BoardList.jsp?pageNum=<%=startPage - 10%>&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>"><</a>
+        <% } %>
+        <% for (int i = startPage; i <= endPage; i++) { %>
+        <a href="BoardList.jsp?pageNum=<%=i%>&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>"><%=i%> </a>
+        <% } %>
+        <% if (endPage < pageCount) { %>
+        <a href="BoardList.jsp?pageNum=<%=startPage + 10%>&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>">></a>
+        <% } %>
+        <a href="BoardList.jsp?pageNum=<%=endPage%>&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>">>></a>
+        <% } %>
     </p>
     <button id="post">등록</button>
 </body>

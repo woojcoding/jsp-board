@@ -30,21 +30,74 @@ public class BoardDao {
         }
     }
 
-    public List<BoardBean> getBoards(int startRow, int endRow) {
+    public List<BoardBean> getBoards(String startDate,
+                                     String endDate,
+                                     String categoryId,
+                                     String keyword,
+                                     int startRow,
+                                     int endRow
+    ) {
         List<BoardBean> list = new ArrayList<>();
 
         getCon();
 
         try {
-            String sql = "SELECT * FROM board ORDER BY boardId DESC LIMIT ?, ?";
+            StringBuilder sql = new StringBuilder(
+                    "SELECT * FROM board " +
+                            "WHERE 1=1");
 
-            pstmt = con.prepareStatement(sql);
-            pstmt.setInt(1, startRow - 1);
-            pstmt.setInt(2, endRow);
+            StringBuilder conditionSql = new StringBuilder();
+
+            if (startDate != null && !startDate.isEmpty()) {
+                conditionSql.append(" AND createdAt >= ?");
+            }
+
+            if (endDate != null && !endDate.isEmpty()) {
+                conditionSql.append(" AND createdAt <= ?");
+            }
+
+            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
+                conditionSql.append(" AND categoryId = ?");
+            }
+
+            if (keyword != null && !keyword.isEmpty()) {
+                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
+            }
+
+            sql.append(conditionSql);
+            sql.append(" ORDER BY boardId DESC LIMIT ?, ?");
+
+            pstmt = con.prepareStatement(sql.toString());
+
+            int index = 1;
+
+            if (startDate != null && !startDate.isEmpty()) {
+                pstmt.setString(index++, startDate);
+            }
+
+            if (endDate != null && !endDate.isEmpty()) {
+                pstmt.setString(index++, endDate);
+            }
+
+            if (categoryId != null
+                    && !categoryId.equals("ALL")
+                    && !categoryId.isEmpty()
+            ) {
+                pstmt.setString(index++, categoryId);
+            }
+
+            if (keyword != null && !keyword.isEmpty()) {
+                pstmt.setString(index++, "%" + keyword + "%");
+                pstmt.setString(index++, "%" + keyword + "%");
+                pstmt.setString(index++, "%" + keyword + "%");
+            }
+
+            pstmt.setInt(index++, startRow - 1);
+            pstmt.setInt(index, endRow);
 
             rs = pstmt.executeQuery();
 
-            while(rs.next()) {
+            while (rs.next()) {
                 BoardBean boardBean = new BoardBean();
 
                 boardBean.setBoardId(rs.getLong(1));
@@ -53,8 +106,8 @@ public class BoardDao {
                 boardBean.setTitle(rs.getString(4));
                 boardBean.setContent(rs.getString(5));
                 boardBean.setViews(rs.getString(6));
-                boardBean.setCreatedAt(rs.getDate(7).toString());
-                boardBean.setModifiedAt(rs.getDate(8).toString());
+                boardBean.setCreatedAt(rs.getTimestamp(7).toString());
+                boardBean.setModifiedAt(rs.getTimestamp(8).toString());
                 boardBean.setCategoryId(rs.getLong(9));
 
                 list.add(boardBean);
@@ -68,22 +121,67 @@ public class BoardDao {
         return list;
     }
 
-    public int getBoardCount() {
+    public int getBoardCount(String startDate,
+                             String endDate,
+                             String categoryId,
+                             String keyword) {
         int count = 0;
 
         getCon();
 
         try {
-            String sql = "SELECT COUNT(*) FROM board";
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM board WHERE 1=1");
 
-            pstmt = con.prepareStatement(sql);
+            StringBuilder conditionSql = new StringBuilder();
+
+            if (startDate != null && !startDate.isEmpty()) {
+                conditionSql.append(" AND createdAt >= ?");
+            }
+
+            if (endDate != null && !endDate.isEmpty()) {
+                conditionSql.append(" AND createdAt <= ?");
+            }
+
+            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
+                conditionSql.append(" AND categoryId = ?");
+            }
+
+            if (keyword != null && !keyword.isEmpty()) {
+                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
+            }
+
+            sql.append(conditionSql);
+
+            pstmt = con.prepareStatement(sql.toString());
+
+            int index = 1;
+
+            if (startDate != null && !startDate.isEmpty()) {
+                pstmt.setString(index++, startDate);
+            }
+
+            if (endDate != null && !endDate.isEmpty()) {
+                pstmt.setString(index++, endDate);
+            }
+
+            if (categoryId != null
+                    && !categoryId.equals("ALL")
+                    && !categoryId.isEmpty()
+            ) {
+                pstmt.setString(index++, categoryId);
+            }
+
+            if (keyword != null && !keyword.isEmpty()) {
+                pstmt.setString(index++, "%" + keyword + "%");
+                pstmt.setString(index++, "%" + keyword + "%");
+                pstmt.setString(index++, "%" + keyword + "%");
+            }
 
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
