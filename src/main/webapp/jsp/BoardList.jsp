@@ -147,6 +147,6 @@
         <a href="BoardList.jsp?pageNum=<%=endPage%>&startDate=<%=startDate != null ? startDate : ""%>&endDate=<%=endDate != null ? endDate : ""%>&category=<%=categoryId != null ? categoryId : ""%>&keyword=<%=keyword != null ? keyword : ""%>">>></a>
         <% } %>
     </p>
-    <button id="post">등록</button>
+    <button id="post" onclick="location.href='BoardWriteForm.jsp'">등록</button>
 </body>
 </html>
