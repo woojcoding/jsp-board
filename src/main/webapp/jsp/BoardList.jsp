@@ -70,7 +70,7 @@
 
                             categories.put(categoryBean.getCategoryId(), categoryBean.getName());
                     %>
-                    <option value="<%=categoryBean.getName()%>" name="categoryId"><%=categoryBean.getName()%></option>
+                    <option value="<%=categoryBean.getCategoryId()%>" name="categoryId"><%=categoryBean.getName()%></option>
                     <%
                         }
                     %>
