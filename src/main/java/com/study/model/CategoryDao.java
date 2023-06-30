@@ -60,4 +60,30 @@ public class CategoryDao {
 
         return categories;
     }
+
+    public String getCategoryName(Long categoryId) {
+        String categoryName = "";
+
+        getCon();
+
+        try {
+            String query = "SELECT name FROM category WHERE categoryId = ?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, categoryId);
+
+            rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                categoryName = rs.getString("name");
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return categoryName;
+    }
 }

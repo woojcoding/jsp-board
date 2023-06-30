@@ -5,7 +5,7 @@ public class FileBean {
 
     private String name;
 
-    private long categoryId;
+    private long boardId;
 
     private byte[] file;
 
@@ -25,12 +25,12 @@ public class FileBean {
         this.name = name;
     }
 
-    public long getCategoryId() {
-        return categoryId;
+    public long getBoardId() {
+        return boardId;
     }
 
-    public void setCategoryId(long categoryId) {
-        this.categoryId = categoryId;
+    public void setBoardId(long boardId) {
+        this.boardId = boardId;
     }
 
     public byte[] getFile() {

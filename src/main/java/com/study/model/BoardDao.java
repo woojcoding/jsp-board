@@ -217,4 +217,50 @@ public class BoardDao {
             e.printStackTrace();
         }
     }
+
+    public BoardBean getOneBoard(String boardId) {
+        BoardBean boardBean = null;
+
+        getCon();
+
+        try {
+
+            String readSql = "UPDATE board SET views = views+1 where boardId =?";
+
+            pstmt = con.prepareStatement(readSql);
+            pstmt.setLong(1, Long.parseLong(boardId));
+
+            pstmt.executeUpdate();
+
+            String query = "SELECT * FROM board WHERE boardId = ?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, Long.parseLong(boardId));
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                boardBean = new BoardBean();
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+                boardBean.setBoardId(rs.getLong(1));
+                boardBean.setWriter(rs.getString(2));
+                boardBean.setPassword(rs.getString(3));
+                boardBean.setTitle(rs.getString(4));
+                boardBean.setContent(rs.getString(5));
+                boardBean.setAttached(rs.getBoolean(6));
+                boardBean.setViews(rs.getString(7));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
+                boardBean.setCategoryId(rs.getLong(10));
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return boardBean;
+    }
 }
