@@ -16,6 +16,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/css/board.css?after" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <title>게시글 보기</title>
 </head>
 <body>
@@ -84,6 +85,7 @@
     <table class="boardList">
         <tr>
             <td>카테고리</td>
+            <td>첨부</td>
             <td>제목</td>
             <td>작성자</td>
             <td>조회수</td>
@@ -94,14 +96,18 @@
             List<BoardBean> boards = boardDao.getBoards(startDate, endDate, categoryId, keyword, startRow, endRow);
 
             for (BoardBean board : boards) {
+                String attachmentStatus = board.isAttached() ? "<i class='fas fa-paperclip'></i>" : "";
+
+                String shortenedTitle = board.getTitle().length() > 80 ? board.getTitle().substring(0, 80) + "..." : board.getTitle();
         %>
         <tr>
             <td><%=categories.get(board.getCategoryId())%></td>
-            <td><a href="BoardInfo.jsp?num=<%=board.getBoardId()%>" style="text-decoration:none"/><%=board.getTitle()%></td>
+            <td><%=attachmentStatus%></td>
+            <td><a href="BoardInfo.jsp?num=<%=board.getBoardId()%>" style="text-decoration:none;"><%=shortenedTitle%></a></td>
             <td><%=board.getWriter()%></td>
             <td><%=board.getViews()%></td>
             <td><%=board.getCreatedAt()%></td>
-            <td><%=board.getModifiedAt()%></td>
+            <td><%=board.getModifiedAt() != null ? board.getModifiedAt() : "-"%></td>
         </tr>
         <%
             }

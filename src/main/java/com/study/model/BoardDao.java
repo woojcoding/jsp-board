@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,15 +101,19 @@ public class BoardDao {
             while (rs.next()) {
                 BoardBean boardBean = new BoardBean();
 
+                SimpleDateFormat dateFormat =
+                        new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
                 boardBean.setBoardId(rs.getLong(1));
                 boardBean.setWriter(rs.getString(2));
                 boardBean.setPassword(rs.getString(3));
                 boardBean.setTitle(rs.getString(4));
                 boardBean.setContent(rs.getString(5));
-                boardBean.setViews(rs.getString(6));
-                boardBean.setCreatedAt(rs.getTimestamp(7).toString());
-                boardBean.setModifiedAt(rs.getTimestamp(8).toString());
-                boardBean.setCategoryId(rs.getLong(9));
+                boardBean.setAttached(rs.getBoolean(6));
+                boardBean.setViews(rs.getString(7));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
+                boardBean.setModifiedAt(dateFormat.format(rs.getTimestamp(9)));
+                boardBean.setCategoryId(rs.getLong(10));
 
                 list.add(boardBean);
             }
