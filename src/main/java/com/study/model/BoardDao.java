@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +114,12 @@ public class BoardDao {
                 boardBean.setViews(rs.getString(7));
                 boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
                 boardBean.setCategoryId(rs.getLong(10));
+
+                Timestamp modifiedTimestamp = rs.getTimestamp(9);
+
+                if (modifiedTimestamp != null) {
+                    boardBean.setModifiedAt(dateFormat.format(modifiedTimestamp));
+                }
 
                 list.add(boardBean);
             }
@@ -251,6 +258,12 @@ public class BoardDao {
                 boardBean.setViews(rs.getString(7));
                 boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
                 boardBean.setCategoryId(rs.getLong(10));
+
+                Timestamp modifiedTimestamp = rs.getTimestamp(9);
+
+                if (modifiedTimestamp != null) {
+                    boardBean.setModifiedAt(dateFormat.format(modifiedTimestamp));
+                }
             }
 
             con.close();
@@ -304,7 +317,12 @@ public class BoardDao {
         getCon();
 
         try {
-            String query = "UPDATE board SET writer = ?, title = ?, content = ? WHERE boardId = ?";
+            String query = "UPDATE board "
+                    + "SET writer = ?, "
+                    + "title = ?, "
+                    + "content = ?, "
+                    + "modifiedAt = CURRENT_TIMESTAMP"
+                    + " WHERE boardId = ?";
 
             pstmt = con.prepareStatement(query);
             pstmt.setString(1, boardBean.getWriter());
