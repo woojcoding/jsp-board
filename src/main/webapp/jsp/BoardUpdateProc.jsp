@@ -41,7 +41,7 @@
 
         // 비밀번호 확인 일치 검증
         if (!isValidated) {
-            System.out.println("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            System.out.println("비밀번호가 일치하지 않습니다.");
 
             return;
         }

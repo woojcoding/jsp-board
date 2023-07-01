@@ -128,7 +128,7 @@
       <td class="buttons" colspan="4">
         <button onclick="location.href='BoardList.jsp'">목록</button>
         <button onclick="location.href='BoardUpdateForm.jsp?boardId=<%=boardId%>'">수정</button>
-        <button onclick="location.href='BoardList.jsp'">삭제</button>
+        <button onclick="location.href='PasswordValidate.jsp?boardId=<%=boardId%>'">삭제</button>
       </td>
     </tr>
   </table>

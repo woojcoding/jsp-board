@@ -351,4 +351,20 @@ public class BoardDao {
 
         return isValidated;
     }
+
+    public void deleteBoard(String boardId) {
+        getCon();
+
+        try {
+            String query = "DELETE FROM board WHERE boardId = ?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setLong(1,Long.parseLong(boardId));
+            pstmt.executeUpdate();
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
