@@ -103,7 +103,7 @@
         <tr>
             <td><%=categories.get(board.getCategoryId())%></td>
             <td><%=attachmentStatus%></td>
-            <td><a href="BoardInfo.jsp?num=<%=board.getBoardId()%>" style="text-decoration:none;"><%=shortenedTitle%></a></td>
+            <td><a href="BoardInfo.jsp?boardId=<%=board.getBoardId()%>" style="text-decoration:none;"><%=shortenedTitle%></a></td>
             <td><%=board.getWriter()%></td>
             <td><%=board.getViews()%></td>
             <td><%=board.getCreatedAt()%></td>

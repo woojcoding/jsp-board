@@ -28,7 +28,7 @@
       CommentDao commentDao = new CommentDao();
       commentDao.insertComment(commentBean);
 
-      response.sendRedirect("BoardInfo.jsp?num=" + boardId);
+      response.sendRedirect("BoardInfo.jsp?boardId=" + boardId);
   %>
 </body>
 </html>

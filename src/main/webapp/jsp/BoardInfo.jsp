@@ -60,7 +60,7 @@
 <body>
 <h2>게시판 - 보기<h2>
     <%
-    String boardId = request.getParameter("num");
+    String boardId = request.getParameter("boardId");
 
     BoardDao boardDao = new BoardDao();
 
@@ -121,7 +121,7 @@
     <tr>
       <td class="buttons" colspan="4">
         <button onclick="location.href='BoardList.jsp'">목록</button>
-        <button onclick="location.href='BoardList.jsp'">수정</button>
+        <button onclick="location.href='BoardUpdateForm.jsp?boardId=<%=boardId%>'">수정</button>
         <button onclick="location.href='BoardList.jsp'">삭제</button>
       </td>
     </tr>

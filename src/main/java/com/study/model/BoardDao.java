@@ -197,7 +197,6 @@ public class BoardDao {
         getCon();
 
         try {
-
             String query = "INSERT INTO board (writer, password, title, content, isAttached, views, createdAt, modifiedAt, categoryId) " +
                     "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, NULL, ?)";
 
@@ -224,7 +223,6 @@ public class BoardDao {
         getCon();
 
         try {
-
             String readSql = "UPDATE board SET views = views+1 where boardId =?";
 
             pstmt = con.prepareStatement(readSql);
@@ -262,5 +260,95 @@ public class BoardDao {
         }
 
         return boardBean;
+    }
+
+    public BoardBean getBoardInfo(String boardId) {
+        BoardBean boardBean = null;
+
+        getCon();
+
+        try {
+            String query = "SELECT * FROM board WHERE boardId = ?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, Long.parseLong(boardId));
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                boardBean = new BoardBean();
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+                boardBean.setBoardId(rs.getLong(1));
+                boardBean.setWriter(rs.getString(2));
+                boardBean.setPassword(rs.getString(3));
+                boardBean.setTitle(rs.getString(4));
+                boardBean.setContent(rs.getString(5));
+                boardBean.setAttached(rs.getBoolean(6));
+                boardBean.setViews(rs.getString(7));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
+                boardBean.setCategoryId(rs.getLong(10));
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return boardBean;
+    }
+
+    public void updateBoard(BoardBean boardBean) {
+        getCon();
+
+        try {
+            String query = "UPDATE board SET writer = ?, title = ?, content = ? WHERE boardId = ?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, boardBean.getWriter());
+            pstmt.setString(2, boardBean.getTitle());
+            pstmt.setString(3, boardBean.getContent());
+            pstmt.setLong(4,boardBean.getBoardId());
+            pstmt.executeUpdate();
+
+            con.close();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean validatePassword(BoardBean boardBean) {
+        getCon();
+
+        boolean isValidated = false;
+
+        try {
+            String query = "SELECT password FROM board WHERE boardId=?";
+
+            pstmt = con.prepareStatement(query);
+            pstmt.setLong(1, boardBean.getBoardId());
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                String dbPassword = rs.getString(1);
+
+                String password = boardBean.getPassword();
+
+                if (dbPassword.equals(password)) {
+                    isValidated = true;
+                }
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return isValidated;
     }
 }
