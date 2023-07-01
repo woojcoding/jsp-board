@@ -36,6 +36,7 @@
       border: 1px solid #ccc;
       padding: 10px;
       margin-top: 20px;
+      width: 100%;
     }
 
     .rightAlign {
@@ -45,6 +46,11 @@
     .comment {
       border-bottom: 1px dashed #ccc;
       background: #f2f2f2;
+      width: 100%;
+    }
+
+    textarea {
+      resize: none;
     }
 
     .commentEnd {
@@ -82,7 +88,7 @@
       <td class="rightAlign">조회수: <%=boardBean.getViews()%></td>
     </tr>
     <tr class="content-row">
-      <td colspan="4" class="content"><%=boardBean.getContent()%></td>
+      <td colspan="4" class="content"><%=boardBean.getContent().replaceAll("\n", "<br>")%></td>
     </tr>
     <tr>
       <td colspan="4">
@@ -106,7 +112,7 @@
       <td colspan="4">
         <%=commentBean.getCreatedAt()%>
         <br>
-        <%=commentBean.getContent()%>
+        <%=commentBean.getContent().replaceAll("\n", "<br>")%>
       </td>
     </tr>
       <%
