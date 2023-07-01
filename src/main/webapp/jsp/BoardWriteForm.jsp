@@ -55,7 +55,7 @@
             display: block;
             padding: 10px 20px;
             background-color: #f2f2f2;
-            border: none;
+            border: solid 1px #000;
             text-decoration: none;
             color: #000;
             cursor: pointer;
@@ -71,6 +71,10 @@
 
         .button-left a:hover,
         .button-right input[type="submit"]:hover {
+            background-color: #dcdcdc;
+        }
+
+        button:hover {
             background-color: #dcdcdc;
         }
     </style>

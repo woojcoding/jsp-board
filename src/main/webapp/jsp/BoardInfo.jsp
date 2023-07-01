@@ -60,6 +60,22 @@
     .buttons {
       text-align: center;
     }
+
+    button {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 10px 20px;
+      background-color: #f2f2f2;
+      border: solid 1px #000;
+      text-decoration: none;
+      color: #000;
+      cursor: pointer;
+    }
+
+     button:hover {
+      background-color: #dcdcdc;
+    }
+
   </style>
   <title>게시판 보기</title>
 </head>

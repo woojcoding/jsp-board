@@ -46,28 +46,41 @@
 
     .text {
       width: 100%;
+      resize: none;
     }
 
-    .button-container {
-      display: flex;
-      justify-content: space-between;
+    textarea {
+      width: 100%;
+      resize: none;
     }
 
-    .button-wrapper {
-      flex: 1;
-    }
-
-    .button {
+    .button-left,
+    .button-right {
       display: inline-block;
-      padding: 8px 16px;
-      background-color: #f5f5f5;
-      border: none;
-      color: #333;
-      text-align: center;
+    }
+
+    .button-left a,
+    .button-right button {
+      display: block;
+      padding: 10px 20px;
+      background-color: #f2f2f2;
+      border: solid 1px #000;
       text-decoration: none;
-      font-size: 14px;
+      color: #000;
       cursor: pointer;
-      border-radius: 4px;
+    }
+
+    .button-left {
+      float: left;
+    }
+
+    .button-right {
+      float: right;
+    }
+
+    .button-left a:hover,
+    .button-right input[type="submit"]:hover {
+      background-color: #dcdcdc;
     }
   </style>
   <title>게시판 수정</title>
@@ -164,11 +177,11 @@
       </td>
     </tr>
     <tr>
-      <td colspan="2" class="button-container">
-        <div class="button-wrapper start">
+      <td colspan="2">
+        <div class="button-left">
           <a href="BoardInfo.jsp?boardId=<%=boardId%>" class="button">취소</a>
         </div>
-        <div class="button-wrapper end">
+        <div class="button-right">
           <input type="hidden" name="boardId" value="<%=boardId%>">
           <button onclick="return validateForm();" class="button">저장</button>
         </div>
