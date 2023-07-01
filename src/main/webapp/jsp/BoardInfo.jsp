@@ -7,76 +7,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-  <style>
-    table {
-      width: 100%;
-      background-color: #fff;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    table td {
-      padding: 10px;
-    }
-
-    table tr:first-child {
-      font-weight: bold;
-    }
-
-    table tr:last-child td {
-      border-top: none;
-    }
-
-    .title {
-      border-bottom: 2px solid #000;
-      font-weight: bold;
-    }
-
-    .content {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-top: 20px;
-      width: 100%;
-    }
-
-    .rightAlign {
-      text-align: right;
-    }
-
-    .comment {
-      border-bottom: 1px dashed #ccc;
-      background: #f2f2f2;
-      width: 100%;
-    }
-
-    textarea {
-      resize: none;
-    }
-
-    .commentEnd {
-      background: #f2f2f2;
-    }
-
-    .buttons {
-      text-align: center;
-    }
-
-    button {
-      display: inline-block;
-      margin: 0 10px;
-      padding: 10px 20px;
-      background-color: #f2f2f2;
-      border: solid 1px #000;
-      text-decoration: none;
-      color: #000;
-      cursor: pointer;
-    }
-
-     button:hover {
-      background-color: #dcdcdc;
-    }
-
-  </style>
+  <link rel="stylesheet" href="/css/board-info.css" type="text/css">
   <title>게시판 보기</title>
 </head>
 <body>

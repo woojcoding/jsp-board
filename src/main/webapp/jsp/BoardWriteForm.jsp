@@ -12,72 +12,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-
-        tr {
-            border-top: 1px dotted black;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        table tr:not(:last-child){
-            border-bottom: 1px dotted black;
-        }
-
-        td {
-            border-top: 1px dotted black;
-            position: relative;
-        }
-
-        text {
-            width: 100%;
-        }
-
-        textarea {
-            width: 100%;
-            resize: none;
-        }
-
-        .button-left,
-        .button-right {
-            display: inline-block;
-        }
-
-        .button-left a,
-        .button-right input[type="submit"] {
-            display: block;
-            padding: 10px 20px;
-            background-color: #f2f2f2;
-            border: solid 1px #000;
-            text-decoration: none;
-            color: #000;
-            cursor: pointer;
-        }
-
-        .button-left {
-            float: left;
-        }
-
-        .button-right {
-            float: right;
-        }
-
-        .button-left a:hover,
-        .button-right input[type="submit"]:hover {
-            background-color: #dcdcdc;
-        }
-
-        button:hover {
-            background-color: #dcdcdc;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/board-write.css" type="text/css">
     <title>게시판-등록</title>
 </head>
 <body>

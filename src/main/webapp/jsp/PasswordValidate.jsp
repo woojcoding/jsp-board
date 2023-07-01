@@ -9,27 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-  <style>
-    table {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    table tr.password th {
-      background-color: #f2f2f2;
-    }
-
-    table tr.password th,
-    table tr.password td {
-      border-top: 1px dotted black;
-      border-bottom: 1px dotted black;
-    }
-
-    .buttons {
-      text-align: center;
-    }
-
-  </style>
+    <link rel="stylesheet" href="/css/password-validate.css" type="text/css">
     <title>비밀번호 확인</title>
 </head>
 <body>
