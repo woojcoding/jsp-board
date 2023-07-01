@@ -12,8 +12,69 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>게시판-등록</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
+
+        tr {
+            border-top: 1px dotted black;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        table tr:not(:last-child){
+            border-bottom: 1px dotted black;
+        }
+
+        td {
+            border-top: 1px dotted black;
+            position: relative;
+        }
+
+        text {
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            resize: none;
+        }
+
+        .button-left,
+        .button-right {
+            display: inline-block;
+        }
+
+        .button-left a,
+        .button-right input[type="submit"] {
+            display: block;
+            padding: 10px 20px;
+            background-color: #f2f2f2;
+            border: none;
+            text-decoration: none;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .button-left {
+            float: left;
+        }
+
+        .button-right {
+            float: right;
+        }
+
+        .button-left a:hover,
+        .button-right input[type="submit"]:hover {
+            background-color: #dcdcdc;
+        }
+    </style>
+    <title>게시판-등록</title>
 </head>
 <body>
 <script>
@@ -62,12 +123,13 @@
         }
     }
 </script>
-게시판 - 등록
+    <h2>게시판 - 등록</h2>
+
     <form name="myForm" action="BoardWriteProc.jsp" method="post" onsubmit="return validateForm()">
     <table>
         <tr>
-            <td>카테고리</td>
-            <td>
+            <th>카테고리</th>
+            <td colspan="2">
             <%
                 CategoryDao categoryDao = new CategoryDao();
 
@@ -90,24 +152,24 @@
             </td>
         </tr>
         <tr>
-            <td>작성자</td>
+            <th>작성자</th>
             <td><input type="text" name="writer" id="writer"></td>
         </tr>
         <tr>
-            <td>비밀번호</td>
+            <th>비밀번호</th>
             <td><input type="password" placeholder="비밀번호" name="password"></td>
             <td><input type="password" placeholder="비밀번호 확인" name="password2"></td>
         </tr>
         <tr>
-            <td>제목</td>
-            <td><input type="text" name="title"></td>
+            <th>제목</th>
+            <td colspan="3"><textarea rows="1" cols="60" name="title"></textarea></td>
         </tr>
         <tr>
-            <td>내용</td>
-            <td><textarea rows="10" cols="60" name="content"></textarea></td>
+            <th>내용</th>
+            <td colspan="3"><textarea rows="10" cols="60" name="content"></textarea></td>
         </tr>
         <tr>
-            <td>파일첨부</td>
+            <th>파일첨부</th>
             <td>
                 <input type="file" name="file1">
                 <br>
@@ -117,8 +179,14 @@
             </td>
         </tr>
         <tr>
-            <td><button onclick="location.href='BoardList.jsp'">취소</button></td>
-            <td><input type="submit" value="저장"></td>
+            <td colspan="3" class="button">
+                <div class="button-left">
+                    <a href="BoardList.jsp">취소</a>
+                </div>
+                <div class="button-right">
+                    <input type="submit" value="저장">
+                </div>
+            </td>
         </tr>
     </table>
     </form>
