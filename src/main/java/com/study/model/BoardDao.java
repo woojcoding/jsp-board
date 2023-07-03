@@ -21,18 +21,12 @@ public class BoardDao {
     /**
      * 게시글 조회에서 게시글 정보들을 가져오는 메서드
      *
-     * @param startDate  날짜 범위 - 시작일
-     * @param endDate    날짜 범위 - 종료일
-     * @param categoryId the category id
-     * @param keyword    the keyword
+     * @param boardSearchCondition 검색 조건
      * @param startRow   페이지 시작 번호
      * @param endRow     페이지 끝 번호
      * @return List<BoardBean> boards
      */
-    public List<BoardBean> getBoards(String startDate,
-                                     String endDate,
-                                     String categoryId,
-                                     String keyword,
+    public List<BoardBean> getBoards(BoardSearchCondition boardSearchCondition,
                                      int startRow,
                                      int endRow
     ) throws Exception {
@@ -45,51 +39,13 @@ public class BoardDao {
                     "SELECT * FROM board " +
                             "WHERE 1=1");
 
-            StringBuilder conditionSql = new StringBuilder();
+            sql = conditionSqlBuild(boardSearchCondition, sql);
 
-            if (startDate != null && !startDate.isEmpty()) {
-                conditionSql.append(" AND createdAt >= ?");
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                conditionSql.append(" AND createdAt <= ?");
-            }
-
-            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
-                conditionSql.append(" AND categoryId = ?");
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
-            }
-
-            sql.append(conditionSql);
             sql.append(" ORDER BY boardId DESC LIMIT ?, ?");
 
             pstmt = connection.prepareStatement(sql.toString());
 
-            int index = 1;
-
-            if (startDate != null && !startDate.isEmpty()) {
-                pstmt.setString(index++, startDate);
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                pstmt.setString(index++, endDate);
-            }
-
-            if (categoryId != null
-                    && !categoryId.equals("ALL")
-                    && !categoryId.isEmpty()
-            ) {
-                pstmt.setString(index++, categoryId);
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-            }
+            int index = setPreparedStatementConditions(boardSearchCondition);
 
             pstmt.setInt(index++, startRow - 1);
             pstmt.setInt(index, endRow);
@@ -102,15 +58,15 @@ public class BoardDao {
                 SimpleDateFormat dateFormat =
                         new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
+                boardBean.setBoardId(rs.getLong("boardId"));
+                boardBean.setWriter(rs.getString("writer"));
+                boardBean.setPassword(rs.getString("password"));
+                boardBean.setTitle(rs.getString("title"));
+                boardBean.setContent(rs.getString("content"));
+                boardBean.setAttached(rs.getBoolean("isAttached"));
+                boardBean.setViews(rs.getString("views"));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp("createdAt")));
+                boardBean.setCategoryId(rs.getLong("categoryId"));
 
                 Timestamp modifiedTimestamp = rs.getTimestamp(9);
 
@@ -144,16 +100,10 @@ public class BoardDao {
     /**
      * 게시글의 조회수를 조회하는 메서드
      *
-     * @param startDate  시작일
-     * @param endDate    종료일
-     * @param categoryId 카테고리 아이디
-     * @param keyword    검색어 키워드(제목 + 내용 + 작성자)
+     * @param boardSearchCondition 검색조건
      * @return the board count
      */
-    public int getBoardCount(String startDate,
-                             String endDate,
-                             String categoryId,
-                             String keyword) throws Exception {
+    public int getBoardCount(BoardSearchCondition boardSearchCondition) throws Exception {
         int count = 0;
 
         connection = ConnectionUtil.getConnection();
@@ -161,50 +111,11 @@ public class BoardDao {
         try {
             StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM board WHERE 1=1");
 
-            StringBuilder conditionSql = new StringBuilder();
-
-            if (startDate != null && !startDate.isEmpty()) {
-                conditionSql.append(" AND createdAt >= ?");
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                conditionSql.append(" AND createdAt <= ?");
-            }
-
-            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
-                conditionSql.append(" AND categoryId = ?");
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
-            }
-
-            sql.append(conditionSql);
+            sql = conditionSqlBuild(boardSearchCondition, sql);
 
             pstmt = connection.prepareStatement(sql.toString());
 
-            int index = 1;
-
-            if (startDate != null && !startDate.isEmpty()) {
-                pstmt.setString(index++, startDate);
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                pstmt.setString(index++, endDate);
-            }
-
-            if (categoryId != null
-                    && !categoryId.equals("ALL")
-                    && !categoryId.isEmpty()
-            ) {
-                pstmt.setString(index++, categoryId);
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-            }
+            setPreparedStatementConditions(boardSearchCondition);
 
             rs = pstmt.executeQuery();
 
@@ -244,6 +155,84 @@ public class BoardDao {
         }
 
         return count;
+    }
+
+    /**
+     * 검색 조건에 따라 sql을 build 해주는 메서드
+     *
+     * @param boardSearchCondition 검색조건
+     * @return sql sql을 반환해준다
+     */
+    private StringBuilder conditionSqlBuild(BoardSearchCondition boardSearchCondition, StringBuilder sql) {
+        StringBuilder conditionSql = new StringBuilder();
+
+        String startDate = boardSearchCondition.getStartDate();
+
+        String endDate = boardSearchCondition.getEndDate();
+
+        String categoryId = boardSearchCondition.getCategoryId();
+
+        String keyword = boardSearchCondition.getKeyword();
+
+        if (startDate != null && !startDate.isEmpty()) {
+            conditionSql.append(" AND createdAt >= ?");
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            conditionSql.append(" AND createdAt <= ?");
+        }
+
+        if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
+            conditionSql.append(" AND categoryId = ?");
+        }
+
+        if (keyword != null && !keyword.isEmpty()) {
+            conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
+        }
+
+        sql.append(conditionSql);
+
+        return sql;
+    }
+
+    /**
+     * 조건에 따라 preparedStatement에 값을 지정해주는 메서드
+     *
+     * @param boardSearchCondition 검색조건
+     * @return index
+     */
+    private int setPreparedStatementConditions(BoardSearchCondition boardSearchCondition) throws SQLException {
+        int index = 1;
+
+        String startDate = boardSearchCondition.getStartDate();
+
+        String endDate = boardSearchCondition.getEndDate();
+
+        String categoryId = boardSearchCondition.getCategoryId();
+
+        String keyword = boardSearchCondition.getKeyword();
+
+        if (startDate != null && !startDate.isEmpty()) {
+            pstmt.setString(index++, startDate);
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            pstmt.setString(index++, endDate);
+        }
+
+        if (categoryId != null
+                && !categoryId.equals("ALL")
+                && !categoryId.isEmpty()
+        ) {
+            pstmt.setString(index++, categoryId);
+        }
+
+        if (keyword != null && !keyword.isEmpty()) {
+            pstmt.setString(index++, "%" + keyword + "%");
+            pstmt.setString(index++, "%" + keyword + "%");
+            pstmt.setString(index++, "%" + keyword + "%");
+        }
+        return index;
     }
 
     /**
@@ -324,15 +313,15 @@ public class BoardDao {
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
+                boardBean.setBoardId(rs.getLong("boardId"));
+                boardBean.setWriter(rs.getString("writer"));
+                boardBean.setPassword(rs.getString("password"));
+                boardBean.setTitle(rs.getString("title"));
+                boardBean.setContent(rs.getString("content"));
+                boardBean.setAttached(rs.getBoolean("isAttached"));
+                boardBean.setViews(rs.getString("views"));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp("createdAt")));
+                boardBean.setCategoryId(rs.getLong("categoryId"));
 
                 Timestamp modifiedTimestamp = rs.getTimestamp(9);
 

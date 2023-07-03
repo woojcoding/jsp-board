@@ -15,11 +15,11 @@
     <%
         String boardId = request.getParameter("boardId");
 
-        String password = request.getParameter("password");
+        String inputPassword = request.getParameter("password");
 
         BoardBean boardBean = new BoardBean();
         boardBean.setBoardId(Long.parseLong(boardId));
-        boardBean.setPassword(password);
+        boardBean.setPassword(inputPassword);
 
         BoardDao boardDao = new BoardDao();
         boolean isValidated = boardDao.validatePassword(boardBean);
