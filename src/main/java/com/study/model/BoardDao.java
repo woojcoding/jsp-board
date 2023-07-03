@@ -1,98 +1,51 @@
 package com.study.model;
 
+import com.study.util.ConnectionUtil;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BoardDao {
-    private final String DB_URL = "jdbc:mysql://localhost:3306/ebrainsoft_study";
-
-    private final String USER = "ebsoft";
-
-    private final String PASS = "ebsoft";
-
-    private Connection con;
+    private Connection connection;
 
     private PreparedStatement pstmt;
 
     private ResultSet rs;
 
-    public void getCon() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-
-            con = DriverManager.getConnection(DB_URL, USER, PASS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<BoardBean> getBoards(String startDate,
-                                     String endDate,
-                                     String categoryId,
-                                     String keyword,
+    /**
+     * 게시글 조회에서 게시글 정보들을 가져오는 메서드
+     *
+     * @param boardSearchCondition 검색 조건
+     * @param startRow   페이지 시작 번호
+     * @param endRow     페이지 끝 번호
+     * @return List<BoardBean> boards
+     */
+    public List<BoardBean> getBoards(BoardSearchCondition boardSearchCondition,
                                      int startRow,
                                      int endRow
-    ) {
+    ) throws Exception {
         List<BoardBean> list = new ArrayList<>();
 
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
             StringBuilder sql = new StringBuilder(
                     "SELECT * FROM board " +
                             "WHERE 1=1");
 
-            StringBuilder conditionSql = new StringBuilder();
+            sql = conditionSqlBuild(boardSearchCondition, sql);
 
-            if (startDate != null && !startDate.isEmpty()) {
-                conditionSql.append(" AND createdAt >= ?");
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                conditionSql.append(" AND createdAt <= ?");
-            }
-
-            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
-                conditionSql.append(" AND categoryId = ?");
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
-            }
-
-            sql.append(conditionSql);
             sql.append(" ORDER BY boardId DESC LIMIT ?, ?");
 
-            pstmt = con.prepareStatement(sql.toString());
+            pstmt = connection.prepareStatement(sql.toString());
 
-            int index = 1;
-
-            if (startDate != null && !startDate.isEmpty()) {
-                pstmt.setString(index++, startDate);
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                pstmt.setString(index++, endDate);
-            }
-
-            if (categoryId != null
-                    && !categoryId.equals("ALL")
-                    && !categoryId.isEmpty()
-            ) {
-                pstmt.setString(index++, categoryId);
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-            }
+            int index = setPreparedStatementConditions(boardSearchCondition);
 
             pstmt.setInt(index++, startRow - 1);
             pstmt.setInt(index, endRow);
@@ -105,15 +58,15 @@ public class BoardDao {
                 SimpleDateFormat dateFormat =
                         new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
+                boardBean.setBoardId(rs.getLong("boardId"));
+                boardBean.setWriter(rs.getString("writer"));
+                boardBean.setPassword(rs.getString("password"));
+                boardBean.setTitle(rs.getString("title"));
+                boardBean.setContent(rs.getString("content"));
+                boardBean.setAttached(rs.getBoolean("isAttached"));
+                boardBean.setViews(rs.getString("views"));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp("createdAt")));
+                boardBean.setCategoryId(rs.getLong("categoryId"));
 
                 Timestamp modifiedTimestamp = rs.getTimestamp(9);
 
@@ -123,70 +76,46 @@ public class BoardDao {
 
                 list.add(boardBean);
             }
-
-            con.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return list;
     }
 
-    public int getBoardCount(String startDate,
-                             String endDate,
-                             String categoryId,
-                             String keyword) {
+    /**
+     * 게시글의 조회수를 조회하는 메서드
+     *
+     * @param boardSearchCondition 검색조건
+     * @return the board count
+     */
+    public int getBoardCount(BoardSearchCondition boardSearchCondition) throws Exception {
         int count = 0;
 
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
             StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM board WHERE 1=1");
 
-            StringBuilder conditionSql = new StringBuilder();
+            sql = conditionSqlBuild(boardSearchCondition, sql);
 
-            if (startDate != null && !startDate.isEmpty()) {
-                conditionSql.append(" AND createdAt >= ?");
-            }
+            pstmt = connection.prepareStatement(sql.toString());
 
-            if (endDate != null && !endDate.isEmpty()) {
-                conditionSql.append(" AND createdAt <= ?");
-            }
-
-            if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
-                conditionSql.append(" AND categoryId = ?");
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
-            }
-
-            sql.append(conditionSql);
-
-            pstmt = con.prepareStatement(sql.toString());
-
-            int index = 1;
-
-            if (startDate != null && !startDate.isEmpty()) {
-                pstmt.setString(index++, startDate);
-            }
-
-            if (endDate != null && !endDate.isEmpty()) {
-                pstmt.setString(index++, endDate);
-            }
-
-            if (categoryId != null
-                    && !categoryId.equals("ALL")
-                    && !categoryId.isEmpty()
-            ) {
-                pstmt.setString(index++, categoryId);
-            }
-
-            if (keyword != null && !keyword.isEmpty()) {
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-                pstmt.setString(index++, "%" + keyword + "%");
-            }
+            setPreparedStatementConditions(boardSearchCondition);
 
             rs = pstmt.executeQuery();
 
@@ -195,19 +124,130 @@ public class BoardDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                    if (connection != null) {
+                        connection.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return count;
     }
 
-    public void insertBoard(BoardBean boardBean) {
-        getCon();
+    /**
+     * 검색 조건에 따라 sql을 build 해주는 메서드
+     *
+     * @param boardSearchCondition 검색조건
+     * @return sql sql을 반환해준다
+     */
+    private StringBuilder conditionSqlBuild(BoardSearchCondition boardSearchCondition, StringBuilder sql) {
+        StringBuilder conditionSql = new StringBuilder();
+
+        String startDate = boardSearchCondition.getStartDate();
+
+        String endDate = boardSearchCondition.getEndDate();
+
+        String categoryId = boardSearchCondition.getCategoryId();
+
+        String keyword = boardSearchCondition.getKeyword();
+
+        if (startDate != null && !startDate.isEmpty()) {
+            conditionSql.append(" AND createdAt >= ?");
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            conditionSql.append(" AND createdAt <= ?");
+        }
+
+        if (categoryId != null && !categoryId.equals("ALL") && !categoryId.isEmpty()) {
+            conditionSql.append(" AND categoryId = ?");
+        }
+
+        if (keyword != null && !keyword.isEmpty()) {
+            conditionSql.append(" AND (writer LIKE ? OR title LIKE ? OR content LIKE ?)");
+        }
+
+        sql.append(conditionSql);
+
+        return sql;
+    }
+
+    /**
+     * 조건에 따라 preparedStatement에 값을 지정해주는 메서드
+     *
+     * @param boardSearchCondition 검색조건
+     * @return index
+     */
+    private int setPreparedStatementConditions(BoardSearchCondition boardSearchCondition) throws SQLException {
+        int index = 1;
+
+        String startDate = boardSearchCondition.getStartDate();
+
+        String endDate = boardSearchCondition.getEndDate();
+
+        String categoryId = boardSearchCondition.getCategoryId();
+
+        String keyword = boardSearchCondition.getKeyword();
+
+        if (startDate != null && !startDate.isEmpty()) {
+            pstmt.setString(index++, startDate);
+        }
+
+        if (endDate != null && !endDate.isEmpty()) {
+            pstmt.setString(index++, endDate);
+        }
+
+        if (categoryId != null
+                && !categoryId.equals("ALL")
+                && !categoryId.isEmpty()
+        ) {
+            pstmt.setString(index++, categoryId);
+        }
+
+        if (keyword != null && !keyword.isEmpty()) {
+            pstmt.setString(index++, "%" + keyword + "%");
+            pstmt.setString(index++, "%" + keyword + "%");
+            pstmt.setString(index++, "%" + keyword + "%");
+        }
+        return index;
+    }
+
+    /**
+     * 게시글을 작성하여 db에 반영하는 메서드
+     *
+     * @param boardBean the board bean
+     */
+    public void insertBoard(BoardBean boardBean) throws Exception {
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "INSERT INTO board (writer, password, title, content, isAttached, views, createdAt, modifiedAt, categoryId) " +
                     "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, NULL, ?)";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setString(1, boardBean.getWriter());
             pstmt.setString(2, boardBean.getPassword());
             pstmt.setString(3, boardBean.getTitle());
@@ -217,29 +257,53 @@ public class BoardDao {
             pstmt.setLong(7, boardBean.getCategoryId());
             pstmt.executeUpdate();
 
-            con.close();
+            connection.close();
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public BoardBean getOneBoard(String boardId) {
+    /**
+     * 게시글의 정보를 조회하며 조회 시 조회수를 1 올리는 메서드
+     * 수정을 위한 조회 시 조회수는 올리지 않는다.
+     *
+     * @param boardId the board id
+     * @param updateViews 조회수 수정 여부
+     * @return the one board
+     */
+    public BoardBean getOneBoard(String boardId, boolean updateViews) throws Exception {
         BoardBean boardBean = null;
 
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
-            String readSql = "UPDATE board SET views = views+1 where boardId =?";
+            if (updateViews) {
+                String readSql = "UPDATE board SET views = views + 1 WHERE boardId = ?";
 
-            pstmt = con.prepareStatement(readSql);
-            pstmt.setLong(1, Long.parseLong(boardId));
+                pstmt = connection.prepareStatement(readSql);
+                pstmt.setLong(1, Long.parseLong(boardId));
 
-            pstmt.executeUpdate();
+                pstmt.executeUpdate();
+            }
 
             String query = "SELECT * FROM board WHERE boardId = ?";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setLong(1, Long.parseLong(boardId));
 
             rs = pstmt.executeQuery();
@@ -249,15 +313,15 @@ public class BoardDao {
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
+                boardBean.setBoardId(rs.getLong("boardId"));
+                boardBean.setWriter(rs.getString("writer"));
+                boardBean.setPassword(rs.getString("password"));
+                boardBean.setTitle(rs.getString("title"));
+                boardBean.setContent(rs.getString("content"));
+                boardBean.setAttached(rs.getBoolean("isAttached"));
+                boardBean.setViews(rs.getString("views"));
+                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp("createdAt")));
+                boardBean.setCategoryId(rs.getLong("categoryId"));
 
                 Timestamp modifiedTimestamp = rs.getTimestamp(9);
 
@@ -265,56 +329,33 @@ public class BoardDao {
                     boardBean.setModifiedAt(dateFormat.format(modifiedTimestamp));
                 }
             }
-
-            con.close();
-
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        return boardBean;
-    }
-
-    public BoardBean getBoardInfo(String boardId) {
-        BoardBean boardBean = null;
-
-        getCon();
-
-        try {
-            String query = "SELECT * FROM board WHERE boardId = ?";
-
-            pstmt = con.prepareStatement(query);
-            pstmt.setLong(1, Long.parseLong(boardId));
-
-            rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                boardBean = new BoardBean();
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
-
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-
-            con.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         return boardBean;
     }
-
-    public void updateBoard(BoardBean boardBean) {
-        getCon();
+    /**
+     * 게시글을 수정하는 메서드
+     *
+     * @param boardBean the board bean
+     */
+    public void updateBoard(BoardBean boardBean) throws Exception {
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "UPDATE board "
@@ -324,29 +365,47 @@ public class BoardDao {
                     + "modifiedAt = CURRENT_TIMESTAMP"
                     + " WHERE boardId = ?";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setString(1, boardBean.getWriter());
             pstmt.setString(2, boardBean.getTitle());
             pstmt.setString(3, boardBean.getContent());
             pstmt.setLong(4,boardBean.getBoardId());
             pstmt.executeUpdate();
 
-            con.close();
-            
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public boolean validatePassword(BoardBean boardBean) {
-        getCon();
+    /**
+     * 비밀번호를 검증하는 메서드
+     *
+     * @param boardBean the board bean
+     * @return the boolean 검증 통과 여부
+     */
+    public boolean validatePassword(BoardBean boardBean) throws Exception {
+        connection = ConnectionUtil.getConnection();
 
         boolean isValidated = false;
 
         try {
             String query = "SELECT password FROM board WHERE boardId=?";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setLong(1, boardBean.getBoardId());
 
             rs = pstmt.executeQuery();
@@ -360,11 +419,22 @@ public class BoardDao {
                     isValidated = true;
                 }
             }
-
-            con.close();
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return isValidated;
@@ -383,6 +453,20 @@ public class BoardDao {
             con.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -18,7 +18,9 @@
 
     BoardDao boardDao = new BoardDao();
 
-    BoardBean boardBean = boardDao.getOneBoard(boardId);
+    boolean updateViews = false;
+
+    BoardBean boardBean = boardDao.getOneBoard(boardId, updateViews);
 
     String dbPassword = boardBean.getPassword();
   %>

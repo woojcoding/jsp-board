@@ -1,7 +1,8 @@
 package com.study.model;
 
+import com.study.util.ConnectionUtil;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,37 +10,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryDao {
-    private final String DB_URL = "jdbc:mysql://localhost:3306/ebrainsoft_study";
-
-    private final String USER = "ebsoft";
-
-    private final String PASS = "ebsoft";
-
-    private Connection con;
+    private Connection connection;
 
     private PreparedStatement pstmt;
 
     private ResultSet rs;
 
-    public void getCon() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-
-            con = DriverManager.getConnection(DB_URL, USER, PASS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<CategoryBean> getAllCategories() throws SQLException {
+    /**
+     * 카테고리들을 조회하는 메서드
+     *
+     * @return the all categories
+     */
+    public List<CategoryBean> getAllCategories() throws Exception {
         List<CategoryBean> categories = new ArrayList<>();
 
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "SELECT * FROM category";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
 
             rs = pstmt.executeQuery();
 
@@ -52,24 +42,43 @@ public class CategoryDao {
 
                 categories.add(category);
             }
-
-            con.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return categories;
     }
 
-    public String getCategoryName(Long categoryId) {
+
+    /**
+     * 카테고리의 이름을 가져오는 메서드
+     *
+     * @param categoryId the category id
+     * @return the category name
+     */
+    public String getCategoryName(Long categoryId) throws Exception {
         String categoryName = "";
 
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "SELECT name FROM category WHERE categoryId = ?";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setLong(1, categoryId);
 
             rs = pstmt.executeQuery();
@@ -77,11 +86,22 @@ public class CategoryDao {
             while (rs.next()) {
                 categoryName = rs.getString("name");
             }
-
-            con.close();
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return categoryName;

@@ -4,7 +4,8 @@
 <%@ page import="com.study.model.BoardBean" %>
 <%@ page import="com.study.model.BoardDao" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.HashMap" %><%--
+<%@ page import="java.util.HashMap" %>
+<%@ page import="com.study.model.BoardSearchCondition" %><%--
   Created by IntelliJ IDEA.
   User: 82103
   Date: 2023-06-26
@@ -48,7 +49,10 @@
 
         String keyword = request.getParameter("keyword");
 
-        total = boardDao.getBoardCount(startDate, endDate, categoryId, keyword);
+        BoardSearchCondition boardSearchCondition =
+                new BoardSearchCondition(startDate, endDate, categoryId, keyword);
+
+        total = boardDao.getBoardCount(boardSearchCondition);
     %>
     <form action="BoardList.jsp?&startDate=<%=startDate%>&endDate=<%=endDate%>&category=<%=categoryId%>&keyword=<%=keyword%>" method="get">
     <table class="search">
@@ -93,7 +97,7 @@
             <td>수정 일시</td>
         </tr>
         <%
-            List<BoardBean> boards = boardDao.getBoards(startDate, endDate, categoryId, keyword, startRow, endRow);
+            List<BoardBean> boards = boardDao.getBoards(boardSearchCondition, startRow, endRow);
 
             for (BoardBean board : boards) {
                 String attachmentStatus = board.isAttached() ? "<i class='fas fa-paperclip'></i>" : "";
