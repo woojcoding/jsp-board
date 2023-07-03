@@ -290,23 +290,27 @@ public class BoardDao {
     }
 
     /**
-     * 게시글 정보를 조회하며 조회수를 1 올리는 메서드
+     * 게시글의 정보를 조회하며 조회 시 조회수를 1 올리는 메서드
+     * 수정을 위한 조회 시 조회수는 올리지 않는다.
      *
      * @param boardId the board id
+     * @param updateViews 조회수 수정 여부
      * @return the one board
      */
-    public BoardBean getOneBoard(String boardId) throws Exception {
+    public BoardBean getOneBoard(String boardId, boolean updateViews) throws Exception {
         BoardBean boardBean = null;
 
         connection = ConnectionUtil.getConnection();
 
         try {
-            String readSql = "UPDATE board SET views = views+1 where boardId =?";
+            if (updateViews) {
+                String readSql = "UPDATE board SET views = views + 1 WHERE boardId = ?";
 
-            pstmt = connection.prepareStatement(readSql);
-            pstmt.setLong(1, Long.parseLong(boardId));
+                pstmt = connection.prepareStatement(readSql);
+                pstmt.setLong(1, Long.parseLong(boardId));
 
-            pstmt.executeUpdate();
+                pstmt.executeUpdate();
+            }
 
             String query = "SELECT * FROM board WHERE boardId = ?";
 
@@ -356,61 +360,6 @@ public class BoardDao {
 
         return boardBean;
     }
-
-    /**
-     * 수정을 하기위해 게시글 정보를 조회하는 메서드
-     *
-     * @param boardId the board id
-     * @return the board info
-     */
-    public BoardBean getBoardInfo(String boardId) throws Exception {
-        BoardBean boardBean = null;
-
-        connection = ConnectionUtil.getConnection();
-
-        try {
-            String query = "SELECT * FROM board WHERE boardId = ?";
-
-            pstmt = connection.prepareStatement(query);
-            pstmt.setLong(1, Long.parseLong(boardId));
-
-            rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                boardBean = new BoardBean();
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
-
-                boardBean.setBoardId(rs.getLong(1));
-                boardBean.setWriter(rs.getString(2));
-                boardBean.setPassword(rs.getString(3));
-                boardBean.setTitle(rs.getString(4));
-                boardBean.setContent(rs.getString(5));
-                boardBean.setAttached(rs.getBoolean(6));
-                boardBean.setViews(rs.getString(7));
-                boardBean.setCreatedAt(dateFormat.format(rs.getTimestamp(8)));
-                boardBean.setCategoryId(rs.getLong(10));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return boardBean;
-    }
-
     /**
      * 게시글을 수정하는 메서드
      *

@@ -21,7 +21,9 @@
 
     BoardDao boardDao = new BoardDao();
 
-    BoardBean boardBean = boardDao.getBoardInfo(boardId);
+    boolean updateViews = false;
+
+    BoardBean boardBean = boardDao.getOneBoard(boardId, updateViews );
 
     CategoryDao categoryDao = new CategoryDao();
 
