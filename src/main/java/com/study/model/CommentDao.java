@@ -1,46 +1,38 @@
 package com.study.model;
 
+import com.study.util.ConnectionUtil;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommentDao {
-    private final String DB_URL = "jdbc:mysql://localhost:3306/ebrainsoft_study";
-
-    private final String USER = "ebsoft";
-
-    private final String PASS = "ebsoft";
-
-    private Connection con;
+    private Connection connection;
 
     private PreparedStatement pstmt;
 
     private ResultSet rs;
 
-    public void getCon() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
+    /**
+     * 댓글들을 조회하는 메서드
+     *
+     * @param boardId the board id
+     * @return the comments
+     */
+    public List<CommentBean> getComments(String boardId) throws Exception {
+        List<CommentBean> list = new ArrayList<>();
 
-            con = DriverManager.getConnection(DB_URL, USER, PASS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<CommentBean> getComments(String boardId) {
-        ArrayList<CommentBean> list = new ArrayList<>();
-
-        getCon();
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "SELECT * FROM comment WHERE boardId = ? "
                     + "ORDER BY commentId DESC";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setLong(1, Long.parseLong(boardId));
 
             rs = pstmt.executeQuery();
@@ -57,33 +49,60 @@ public class CommentDao {
 
                 list.add(commentBean);
             }
-
-            rs.close();
-            con.close();
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return list;
     }
 
-    public void insertComment(CommentBean commentBean) {
-        getCon();
+    /**
+     * 댓글을 작성하여 db에 반영하는 메서드
+     *
+     * @param commentBean the comment bean
+     */
+    public void insertComment(CommentBean commentBean) throws Exception {
+        connection = ConnectionUtil.getConnection();
 
         try {
             String query = "INSERT INTO comment (content, createdAt, boardId)  "
                     + "VALUES (?, CURRENT_TIMESTAMP, ?)";
 
-            pstmt = con.prepareStatement(query);
+            pstmt = connection.prepareStatement(query);
             pstmt.setString(1,commentBean.getContent());
             pstmt.setLong(2, commentBean.getBoardId());
             pstmt.executeUpdate();
 
-            con.close();
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
